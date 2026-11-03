@@ -55,3 +55,7 @@ On 2 November 2026, experimental `0.13.1-test.10` passed the local worker-free s
 ## Test record template
 
 For each run append: date; issue and feature; exact source/revision; environment and test data type; command or safe procedure; expected versus actual result; pass/fail/skipped and evidence; remaining risks. Record failed runs separately and do not weaken assertions. Never include private post content, identifiers, queues or secrets.
+
+## Follow-up run — 3 November 2026
+
+Experimental `0.13.1-test.10` (SHA-256 `305401aceb681fc4d19bb6edbfa2548d09ebae723941049d28e628aafb1f4b44`): `XBS_SKIP_BROWSER=1 bash test/run-all.sh` passed locally, including 43 original checks, 282 private-fixture replay checks and 1,500 synthetic parity cases; browser tests were skipped. The replay fixtures and experimental suite are not in public main. A separate new synthetic photo-post regression failed: authored text mentioning an unavailable post caused `isTombstone` to classify the parent as dead. See [#59](https://github.com/eleven-smg/x-bulk-scheduler/issues/59#issuecomment-6592825450). No fix or real-X validation is claimed.
