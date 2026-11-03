@@ -48,7 +48,7 @@ Counts below cover public project work only. A completed experimental result is 
 | 15 | P55 | ❌ | Define a safe real-post scheduling acceptance test ([#56](https://github.com/eleven-smg/x-bulk-scheduler/issues/56)). | Requires a reviewed target, content and explicit authorization before a real test. |
 | 16 | P57 | ❎ | Verify video attribution with independently established saved examples ([#57](https://github.com/eleven-smg/x-bulk-scheduler/issues/57)). | Requires independently established example and a safely authorized test account. |
 
-### B. Added issues (6)
+### B. Added issues (10)
 
 | # | ID | Status | Outcome / next action | Evidence or remaining work |
 |---|---|---|---|---|
@@ -58,6 +58,11 @@ Counts below cover public project work only. A completed experimental result is 
 | 4 | P61 | ❌ | Verify saved links before allowing bookmark cleanup ([#22](https://github.com/eleven-smg/x-bulk-scheduler/issues/22)). | Verify durable save before bookmark cleanup, including failures and interruptions. |
 | 5 | P62 | ❌ | Preserve deduplication after partial cleanup ([#23](https://github.com/eleven-smg/x-bulk-scheduler/issues/23)). | Test deduplication after partial cleanup without discarding records. |
 | 6 | P66 | ❌ | Integrate the experimental malformed-video-URL fix into public main ([#58](https://github.com/eleven-smg/x-bulk-scheduler/issues/58)). | Source-only P64 is complete; review, integrate and test the fix on main. |
+
+| 7 | P67 | ❌ | Distinguish confirmed dead originals from unknown availability ([#59](https://github.com/eleven-smg/x-bulk-scheduler/issues/59)). | Synthetic classification and evidence needed; a failed lookup alone is not proof. |
+| 8 | P68 | ❌ | Skip confirmed dead originals during collection ([#60](https://github.com/eleven-smg/x-bulk-scheduler/issues/60)). | Depends on P67; keep uncertain items safe and preserve the queue. |
+| 9 | P69 | ❌ | Recheck queued originals before planning ([#61](https://github.com/eleven-smg/x-bulk-scheduler/issues/61)). | Exclude confirmed dead; preserve records pending clarity on queue removal. |
+| 10 | P70 | ❌ | Safely remove selected Likes or bookmarks for confirmed dead posts ([#62](https://github.com/eleven-smg/x-bulk-scheduler/issues/62)). | Depends on P67 and existing selected-cleanup safeguards; not implemented. |
 
 ### C. Semi-completed (36)
 
@@ -115,3 +120,7 @@ Counts below cover public project work only. A completed experimental result is 
 | Session | Outcomes | Remaining and repeat check | Evidence |
 |---|---|---|---|
 | Issue queue setup | Created this public four-section queue and linked individual GitHub issues. No application feature was implemented in this documentation update. | Main integration, real-runtime testing and open issues remain. This is an organization update, not a repeat implementation. | Public main before the file: `09462e216a7936d1b7d84e0e77505aca8425bcc7`; GitHub issues #1–#58 verified open at creation. |
+
+## Functionality testing and dead-link requests
+
+A separate [feature-by-feature functionality test matrix](FUNCTIONALITY-TESTS.md) records historical tests and outstanding checks. Added P67–P70 for availability evidence, collection, queued plans and selected cleanup. These are open and depend on safe classification; no automatic deletion or cleanup has been implemented. Existing Like/bookmark cleanup issues remain linked, not duplicated. Contributor testing is welcome via the individual `help wanted` issues. No application source was changed.
