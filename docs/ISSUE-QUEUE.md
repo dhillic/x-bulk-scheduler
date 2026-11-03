@@ -58,7 +58,6 @@ Counts below cover public project work only. A completed experimental result is 
 | 4 | P61 | ❌ | Verify saved links before allowing bookmark cleanup ([#22](https://github.com/eleven-smg/x-bulk-scheduler/issues/22)). | Verify durable save before bookmark cleanup, including failures and interruptions. |
 | 5 | P62 | ❌ | Preserve deduplication after partial cleanup ([#23](https://github.com/eleven-smg/x-bulk-scheduler/issues/23)). | Test deduplication after partial cleanup without discarding records. |
 | 6 | P66 | ❌ | Integrate the experimental malformed-video-URL fix into public main ([#58](https://github.com/eleven-smg/x-bulk-scheduler/issues/58)). | Source-only P64 is complete; review, integrate and test the fix on main. |
-
 | 7 | P67 | ❌ | Distinguish confirmed dead originals from unknown availability ([#59](https://github.com/eleven-smg/x-bulk-scheduler/issues/59)). | Synthetic classification and evidence needed; a failed lookup alone is not proof. |
 | 8 | P68 | ❌ | Skip confirmed dead originals during collection ([#60](https://github.com/eleven-smg/x-bulk-scheduler/issues/60)). | Depends on P67; keep uncertain items safe and preserve the queue. |
 | 9 | P69 | ❌ | Recheck queued originals before planning ([#61](https://github.com/eleven-smg/x-bulk-scheduler/issues/61)). | Exclude confirmed dead; preserve records pending clarity on queue removal. |
@@ -124,3 +123,5 @@ Counts below cover public project work only. A completed experimental result is 
 ## Functionality testing and dead-link requests
 
 A separate [feature-by-feature functionality test matrix](FUNCTIONALITY-TESTS.md) records historical tests and outstanding checks. Added P67–P70 for availability evidence, collection, queued plans and selected cleanup. These are open and depend on safe classification; no automatic deletion or cleanup has been implemented. Existing Like/bookmark cleanup issues remain linked, not duplicated. Contributor testing is welcome via the individual `help wanted` issues. No application source was changed.
+
+A new synthetic regression failed: ordinary post text with unavailable wording caused a fictional photo post to be marked as a tombstone in experimental test.10. The issue remains open; see [#59](https://github.com/eleven-smg/x-bulk-scheduler/issues/59#issuecomment-6592825450). The existing worker-free suite was intentionally rerun and passed; browser and real-X testing were skipped.
