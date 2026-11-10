@@ -1703,6 +1703,63 @@
     await postCommunityStep(step);
   }
 
+  // Edit one setting at a time without invoking community posting.
+  function readEditableCollections() {
+    const cols = getCollections();
+    if (!Array.isArray(cols) || cols.some((c) => !c || typeof c.name !== 'string'
+        || !Array.isArray(c.communities))) throw new Error('Saved collections need review; nothing was changed.');
+    return JSON.parse(JSON.stringify(cols));
+  }
+  function writeCommunitySetting(key, value) {
+    try { GM_setValue(key, JSON.stringify(value)); }
+    catch (error) { throw new Error('Could not confirm the save. Check saved settings before retrying.'); }
+  }
+  function addCommunityCollection(name) {
+    const value = String(name || '').trim();
+    if (!value) throw new Error('Enter a collection name.');
+    const cols = readEditableCollections();
+    if (cols.some((c) => c.name.toLowerCase() === value.toLowerCase()))
+      throw new Error('That collection already exists.');
+    cols.push({ name: value, communities: [] });
+    writeCommunitySetting(COMMUNITY_KEY, cols);
+  }
+  function addCommunityToCollection(collection, name, url) {
+    const label = String(name || '').trim();
+    let parsed;
+    try { parsed = new URL(String(url || '').trim()); } catch (e) { throw new Error('Enter a valid X community URL.'); }
+    if (parsed.protocol !== 'https:' || parsed.hostname !== 'x.com'
+        || !/^\/i\/communities\/\d+\/?$/.test(parsed.pathname)
+        || parsed.search || parsed.hash || parsed.username || parsed.password)
+      throw new Error('Enter an HTTPS X community URL in the form https://x.com/i/communities/123.');
+    if (!label) throw new Error('Enter a community name.');
+    const cols = readEditableCollections();
+    const col = cols.find((c) => c.name === collection);
+    if (!col) throw new Error('Select an existing collection.');
+    if (col.communities.some((c) => c && (c.url === parsed.href
+        || String(c.name || '').toLowerCase() === label.toLowerCase())))
+      throw new Error('That community name or URL is already in the collection.');
+    col.communities.push({ name: label, url: parsed.href });
+    writeCommunitySetting(COMMUNITY_KEY, cols);
+  }
+  function assignCommunitySession(session, collection) {
+    const n = Number(session);
+    if (!Number.isSafeInteger(n) || n < 1 || n > CONFIG.presets[CONFIG.active].sessions)
+      throw new Error('Enter a valid session number for the active preset.');
+    const cols = readEditableCollections();
+    if (collection && !cols.some((c) => c.name === collection))
+      throw new Error('Select an existing collection.');
+    const saved = JSON.parse(GM_getValue(KEYS.settings, '{}'));
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved))
+      throw new Error('Saved settings need review; nothing was changed.');
+    const existing = saved.sessionCollections === undefined ? {} : saved.sessionCollections;
+    if (!existing || typeof existing !== 'object' || Array.isArray(existing))
+      throw new Error('Saved session settings need review; nothing was changed.');
+    const map = { ...existing };
+    if (collection) map[String(n)] = collection; else delete map[String(n)];
+    writeCommunitySetting(KEYS.settings, { ...saved, sessionCollections: map });
+    CONFIG.sessionCollections = map;
+  }
+
   function editCollections() {
     const cols = getCollections();
     const names = cols.map((c) => `${c.name}(${(c.communities || []).length})`).join(', ') || '(none yet)';
@@ -1960,9 +2017,29 @@
             title="Copy links from THIS account's pool into the browser-wide General queue (tagged), so other accounts can pull them.">To General</button>
           <button data-a="genfrom" style="flex:1;background:#275"
             title="Pull links from the General queue into THIS account's pool.">From General</button>
-          <button data-a="communities" style="flex:1;background:#654"
+          <button data-a="communities" aria-expanded="false" aria-controls="xbs-community-form" style="flex:1;background:#654"
             title="Collections of communities + a per-session posting plan.">Communities</button>
         </div>
+        <section id="xbs-community-form" aria-label="Community settings" hidden style="margin-bottom:6px">
+          <label for="xbs-community-collection">Collection</label>
+          <select id="xbs-community-collection" style="width:100%"></select>
+          <label for="xbs-collection-name" style="display:block">New collection name</label>
+          <input id="xbs-collection-name" type="text" style="width:95%"/>
+          <button type="button" id="xbs-collection-add">Create collection</button>
+          <label for="xbs-community-name" style="display:block">Community name</label>
+          <input id="xbs-community-name" type="text" style="width:95%"/>
+          <label for="xbs-community-url" style="display:block">Community URL</label>
+          <input id="xbs-community-url" type="url" style="width:95%"/>
+          <button type="button" id="xbs-community-add">Add community</button>
+          <label for="xbs-community-session" style="display:block">Session number</label>
+          <input id="xbs-community-session" type="number" min="1" step="1" inputmode="numeric" style="width:80px"/>
+          <button type="button" id="xbs-community-assign">Assign collection</button>
+          <button type="button" id="xbs-community-unassign">Clear assignment</button>
+          <div>Planning, listing details and deleting collections still use legacy prompts.</div>
+          <button type="button" id="xbs-community-legacy">Open legacy community menu</button>
+          <button type="button" id="xbs-community-cancel">Cancel</button>
+          <div id="xbs-community-message" role="status" aria-live="polite"></div>
+        </section>
         <div style="display:flex;gap:4px;margin-bottom:6px">
           <button data-a="commnext" style="flex:2;background:#963"
             title="Post the next planned link into its community (NOW — community posts cannot be scheduled). One tap = one post.">Post Community</button>
@@ -2043,7 +2120,13 @@
       },
       gento: addToGeneral,
       genfrom: pullFromGeneral,
-      communities: editCollections,
+      communities: () => {
+        const form = wrap.querySelector('#xbs-community-form');
+        form.hidden = false;
+        wrap.querySelector('button[data-a="communities"]').setAttribute('aria-expanded', 'true');
+        refreshCommunityCollections();
+        wrap.querySelector('#xbs-community-collection').focus();
+      },
       commnext: nextCommunityPost,
       commmode: () => {
         CONFIG.communityDryRun = !CONFIG.communityDryRun;
@@ -2061,6 +2144,56 @@
     };
     wrap.querySelectorAll('button[data-a]').forEach((b) =>
       b.addEventListener('click', () => acts[b.dataset.a]()));
+    const communityForm = wrap.querySelector('#xbs-community-form');
+    const communitySelect = wrap.querySelector('#xbs-community-collection');
+    const communityMessage = wrap.querySelector('#xbs-community-message');
+    function refreshCommunityCollections() {
+      try {
+        const previous = communitySelect.value;
+        const cols = readEditableCollections();
+        communitySelect.replaceChildren(new Option('Select a collection', ''));
+        cols.forEach((c) => communitySelect.add(new Option(c.name, c.name)));
+        communitySelect.value = cols.some((c) => c.name === previous) ? previous : '';
+        communityMessage.textContent = '';
+        return true;
+      } catch (error) {
+        communityMessage.textContent = 'Could not read saved collections. Nothing was changed.';
+        return false;
+      }
+    }
+    const closeCommunityForm = () => {
+      communityForm.hidden = true;
+      for (const el of communityForm.querySelectorAll('input')) el.value = '';
+      communityMessage.textContent = '';
+      const trigger = wrap.querySelector('button[data-a="communities"]');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.focus();
+    };
+    const doCommunityEdit = (fn, success) => {
+      try {
+        fn();
+        if (refreshCommunityCollections()) communityMessage.textContent = success;
+        else communityMessage.textContent = 'Save attempted, but reloading failed. Check saved settings before retrying.';
+      }
+      catch (error) { communityMessage.textContent = error.message || 'Could not confirm the save. Check settings before retrying.'; }
+    };
+    wrap.querySelector('#xbs-collection-add').addEventListener('click', () =>
+      doCommunityEdit(() => addCommunityCollection(wrap.querySelector('#xbs-collection-name').value), 'Collection saved.'));
+    wrap.querySelector('#xbs-community-add').addEventListener('click', () =>
+      doCommunityEdit(() => addCommunityToCollection(communitySelect.value, wrap.querySelector('#xbs-community-name').value,
+        wrap.querySelector('#xbs-community-url').value), 'Community saved.'));
+    wrap.querySelector('#xbs-community-assign').addEventListener('click', () =>
+      doCommunityEdit(() => {
+        if (!communitySelect.value) throw new Error('Select an existing collection.');
+        assignCommunitySession(wrap.querySelector('#xbs-community-session').value, communitySelect.value);
+      }, 'Session assignment saved.'));
+    wrap.querySelector('#xbs-community-unassign').addEventListener('click', () =>
+      doCommunityEdit(() => assignCommunitySession(wrap.querySelector('#xbs-community-session').value, ''), 'Session assignment cleared.'));
+    wrap.querySelector('#xbs-community-legacy').addEventListener('click', editCollections);
+    wrap.querySelector('#xbs-community-cancel').addEventListener('click', closeCommunityForm);
+    communityForm.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeCommunityForm(); }
+    });
     wrap.querySelector('#xbs-min').addEventListener('click', () => {
       const body = wrap.querySelector('#xbs-body');
       body.style.display = body.style.display === 'none' ? 'block' : 'none';
