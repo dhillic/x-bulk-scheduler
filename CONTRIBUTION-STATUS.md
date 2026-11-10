@@ -38,3 +38,23 @@ Several code PRs modify the same userscript on separate branches; maintainers ma
 - Picker: synthetic WAT boundary and ambiguous-control tests passed in Honolulu and Tokyo timezones. Live scheduling in the proposal is blocked until real picker verification.
 - Environment plan: initial documentation check used the wrong path; the corrected whitespace check passed. No installation or physical device was tested.
 - Community settings: synthetic validation, cancellation and synchronous storage-failure test passed. Legacy planning, listing and deletion prompts, cross-tab/async failure handling and installed/screen-reader checks remain.
+
+## Exact validation commands and scope
+
+All commands below ran against separate branches based on the baseline above. The browser tests used intercepted requests and synthetic in-memory storage, never an authenticated X account. Commands with `NODE_PATH` use the locally installed Playwright/axe packages; the corresponding PR test guide describes installing those tools elsewhere.
+
+| Contribution | Command | Result |
+|---|---|---|
+| Search #13 | `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium npm run test:search` | Passed: 1 synthetic browser test. |
+| Captions #14 | `NODE_PATH=/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/captions.browser.test.js` | Passed: 1 synthetic browser test. |
+| Stop #10 | `NODE_PATH=/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/stop-delay.browser.test.js` | Passed: 1 synthetic browser test; observed 29 ms to notice, not request abort. |
+| Storage #1/#8 | `node --test tests/storage-notifications.model.test.js` | Passed: 3 model tests; the model deliberately demonstrates a lost update. |
+| Legacy review #9 | `node --test tests/legacy-review.model.test.js` | Passed: 2 synthetic model tests. |
+| Accessibility #16 | `NODE_PATH=/tmp/xbs-a11y/node_modules:/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/panel-accessibility.browser.test.js` | Passed on rerun: 1 test across two viewports. Initial locator timeout was a test error, documented in PR #70. |
+| Composer #11 | `NODE_PATH=/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/composer-insertion.browser.test.js` | Passed: 1 synthetic browser test; real editor and late rerenders unverified. |
+| Picker #12 | `NODE_PATH=/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/schedule-picker.browser.test.js` | Passed: 1 synthetic browser test across two timezones; actual X picker unverified. |
+| Community settings #15 | `NODE_PATH=/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/community-settings.browser.test.js` | Passed: 1 synthetic browser test; legacy prompts and asynchronous/cross-tab behavior remain. |
+| Release #55 | `git show <baseline>:src/x-bulk-scheduler.user.js`, `sha256sum` and `cmp` against the commit-pinned public raw file; compare an altered copy | Passed: pinned files matched; modified copy differed. No installed artifact verified. |
+| Acceptance #56 and environment plan #17/#18/#54 | `node --check src/x-bulk-scheduler.user.js` and documentation review/whitespace check | Passed after correcting an initial wrong-path documentation check; no real installation or post test. |
+
+`node --check src/x-bulk-scheduler.user.js` and `git diff --check` passed for the code branches. No real X posting, scheduling, likes, follows, deletions or live draft changes were performed. PRs are not merged; CI was not monitored.
