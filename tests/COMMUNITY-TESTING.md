@@ -1,4 +1,4 @@
-# Synthetic community-settings test
+# Synthetic community-settings tests
 
 Run with Node.js 20+, Playwright 1.65.0 and compatible Chromium:
 
@@ -10,12 +10,14 @@ NODE_PATH=/tmp/xbs-browser-test/node_modules node --test tests/community-setting
 ```
 
 Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a compatible system Chromium.
-The test intercepts all page requests and uses fictional storage. It checks
-keyboard cancellation, input validation, synchronous storage errors, retention
-of existing data and unrelated settings, and that the test does not create a
-community plan or enable posting.
+Both tests intercept requests and use fictional storage. They check inline settings,
+listing, review and cancellation, invalid data, synchronous write failures, stale
+review detection, and guarded deletion. Planning doesn't mark links posted;
+legacy plans without an account or plans from a different account are blocked
+from posting until rebuilt. A referenced collection cannot be deleted; there is
+no inline control to clear a saved plan. Existing plans can be replaced only
+following review and confirmation.
 
-Planning, detailed listing and collection deletion remain in the old native
-prompt menu; this is not a complete replacement for hosts without prompts.
-Cross-tab writes and asynchronous manager failures are not proven safe. The
-installed userscript, real X and screen-reader behavior were not tested.
+Writes are not cross-tab transactions; asynchronous or ambiguous manager failures
+are unverified. Installed userscript, real X and screen-reader behavior were not
+tested. No community post or real account action was performed.
