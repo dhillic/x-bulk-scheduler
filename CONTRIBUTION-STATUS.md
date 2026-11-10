@@ -1,6 +1,6 @@
 # X Bulk Scheduler — contribution tracker
 
-Baseline: upstream `main` at `df0f2570100748b7cc6c13836f201d163e57d70f`. This is a contribution progress report, not a claim that changes have been merged, deployed or fully verified. All PRs are against upstream `main`; unresolved items stay open.
+Baseline: upstream `main` at `df0f2570100748b7cc6c13836f201d163e57d70f`. This is a contribution progress report, not a claim that all changes have been merged, deployed or fully verified. PRs are against upstream `main`; unresolved items stay open.
 
 | Issue | Current status | Work done or remaining |
 |---|---|---|
@@ -18,7 +18,7 @@ Baseline: upstream `main` at `df0f2570100748b7cc6c13836f201d163e57d70f`. This is
 | [#18](https://github.com/eleven-smg/x-bulk-scheduler/issues/18) | Partial, draft [PR #73](https://github.com/eleven-smg/x-bulk-scheduler/pull/73) | Installation guidance only; real Tampermonkey installation and safe operation not verified. |
 | [#54](https://github.com/eleven-smg/x-bulk-scheduler/issues/54) | Partial, draft [PR #73](https://github.com/eleven-smg/x-bulk-scheduler/pull/73) | Device plan only; actual desktop and phone testing remains. |
 | [#55](https://github.com/eleven-smg/x-bulk-scheduler/issues/55) | Partial, [PR #64](https://github.com/eleven-smg/x-bulk-scheduler/pull/64) open | Checklist and pinned-source comparison prepared; actual installed userscript/extension and deployment provenance not verified. |
-| [#56](https://github.com/eleven-smg/x-bulk-scheduler/issues/56) | [PR #65](https://github.com/eleven-smg/x-bulk-scheduler/pull/65) open | Safe, separately authorized single-target acceptance checklist proposed; no real post scheduled or sent. |
+| [#56](https://github.com/eleven-smg/x-bulk-scheduler/issues/56) | Completed: [PR #65](https://github.com/eleven-smg/x-bulk-scheduler/pull/65) merged | Safe single-target acceptance checklist documented; no real post scheduled or sent. |
 | [#57](https://github.com/eleven-smg/x-bulk-scheduler/issues/57) | Blocked | Independently established saved examples and an explicitly authorized account are required. |
 
 Several code PRs modify the same userscript on separate branches; maintainers may need to resolve overlaps after merging. Draft PRs are incomplete and must not be treated as production-ready.
@@ -57,11 +57,11 @@ All commands below ran against separate branches based on the baseline above. Th
 | Release #55 | `git show <baseline>:src/x-bulk-scheduler.user.js`, `sha256sum` and `cmp` against the commit-pinned public raw file; compare an altered copy | Passed: pinned files matched; modified copy differed. No installed artifact verified. |
 | Acceptance #56 and environment plan #17/#18/#54 | `node --check src/x-bulk-scheduler.user.js` and documentation review/whitespace check | Passed after correcting an initial wrong-path documentation check; no real installation or post test. |
 
-`node --check src/x-bulk-scheduler.user.js` and `git diff --check` passed for the code branches. No real X posting, scheduling, likes, follows, deletions or live draft changes were performed. PRs are not merged; CI was not monitored.
+`node --check src/x-bulk-scheduler.user.js` and `git diff --check` passed for the code branches. No real X posting, scheduling, likes, follows, deletions or live draft changes were performed. At the time of these checks the PRs were not merged; CI was not monitored.
 
 ## Follow-up: complete issue-queue review
 
-The public `docs/ISSUE-QUEUE.md` at upstream main `df0f2570100748b7cc6c13836f201d163e57d70f` was compared with GitHub: issues #1–#62 were open and no issues were closed. The project's A/B/C sections and evidence remain authoritative for scope; this fork tracker records proposed contributions, not merged results. Existing PRs #63–#74 remain open. The overlapping userscript changes may require conflict resolution.
+The public `docs/ISSUE-QUEUE.md` at upstream main `df0f2570100748b7cc6c13836f201d163e57d70f` was compared with GitHub at the prior review: issues #1–#62 were then open and no issues were closed. The project's A/B/C sections and evidence remain authoritative for scope; this fork tracker records proposed contributions, not merged results. Existing PRs #63–#74 remain open. The overlapping userscript changes may require conflict resolution.
 
 | Issue | Contribution status | Remaining work |
 |---|---|---|
@@ -88,3 +88,9 @@ After sign-in, the shared browser's History navigation and an empty composer/sch
 Read-only authenticated collection inspection: extracted the existing `collectFromView` and helper functions from baseline `df0f2570100748b7cc6c13836f201d163e57d70f`, then executed them against the currently visible Bookmarks and Likes DOM with empty in-memory `seen` sets and a no-op logger, once with photos enabled and once disabled. Candidate links were held only in page memory and never printed or saved. The visible samples produced candidates and no no-media/tombstone observations; this does not establish availability, attribution, complete-list behavior, persistence, scrolling/resume, installed userscript operation or dead-link correctness. No account content was changed. Commands: `NODE_PATH=/data/briefing-tools/node_modules node /data/xbs-readonly-bookmarks-check.cjs` and `NODE_PATH=/data/briefing-tools/node_modules node /data/xbs-readonly-harvest-check.cjs`, connected only to the authenticated shared browser; the local harnesses are not part of the repo. No private account or post identifiers are included in this report.
 
 [#39](https://github.com/eleven-smg/x-bulk-scheduler/issues/39): partial draft [PR #79](https://github.com/eleven-smg/x-bulk-scheduler/pull/79), head `4b86ffbcaa3a0c375d1f42f6a8d122849986d302`, clears stale `scheduledAt` on queued parked photos when rebuilding, including photo-only queues. It preserves duplicates and historical records in synthetic fixtures; day/session/slot metadata remain unchanged. `NODE_PATH=/data/briefing-tools/node_modules PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/chromium node --test tests/parked-photo.synthetic.test.js` passed; `node --check` and `git diff --check` passed. Real installed runtime, concurrency and asynchronous/ambiguous storage failures remain unverified. The branch changes the build to a single queue write and does not fix planner timezone or cap issues.
+
+### Merge and timezone follow-up
+
+At the user's request, documentation-only [PR #65](https://github.com/eleven-smg/x-bulk-scheduler/pull/65) was merged by dhillic as merge commit `44578253bb9565443bcf938de42f2f5eaf822182`; [#56](https://github.com/eleven-smg/x-bulk-scheduler/issues/56) closed. This completes the written acceptance plan, not a real scheduling test. Other PRs remain unmerged.
+
+Authenticated, read-only picker experiment: with the same browser connection, the empty X schedule picker showed Pacific Standard Time when the browser reported `America/Los_Angeles`, and West Africa Time after a temporary `Africa/Lagos` browser timezone override. The override was cleared afterward. No picker value was changed, confirmed or scheduled. This supports a browser-timezone dependence in this setup, not an IP-only rule, and does not verify the selected UTC instant or the installed scheduler. Draft [PR #72](https://github.com/eleven-smg/x-bulk-scheduler/pull/72) maps specifically to WAT and can mismatch a non-WAT picker; it remains blocked and needs revision for browser-local behavior. Draft [PR #77](https://github.com/eleven-smg/x-bulk-scheduler/pull/77)'s WAT label is misleading outside WAT and needs revision. Local planner/picker code uses browser-local Date operations; production behavior and edge cases remain unverified.
