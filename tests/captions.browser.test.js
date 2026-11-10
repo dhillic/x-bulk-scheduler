@@ -56,11 +56,14 @@ test('caption controls validate, cancel and preserve text on storage failure', a
     await page.getByRole('button', { name: 'Queue captions' }).click();
     assert.match(await message.textContent(), /unsaved/i);
     assert.equal(await text.inputValue(), 'unsaved');
+    const existing = {id:'fictional-link',kind:'link',state:'queued',url:'https://x.com/fiction/status/123',scheduledAt:'2035-01-01T10:00:00Z',day:1,session:2,slot:3,extra:'keep'};
+    await page.evaluate(item => window.__values.set('xbs_queue',JSON.stringify([item])), existing);
     await text.fill(''); await page.getByRole('button', { name: 'Queue captions' }).click();
     assert.match(await message.textContent(), /nothing was posted/i);
     const queued = await page.evaluate(() => JSON.parse(window.__values.get('xbs_queue')));
-    assert.equal(queued.length, 2);
-    assert.ok(queued.every(x => x.kind === 'caption'));
+    assert.equal(queued.length, 3);
+    assert.deepEqual(queued[0], existing, 'queueing captions must not rebuild existing plans');
+    assert.ok(queued.slice(1).every(x => x.kind === 'caption' && x.scheduledAt === null));
     assert.deepEqual((await readPool()).pool, ['existing', 'new caption']);
     await page.evaluate(() => { window.__failKey = 'xbs_queue'; });
     await page.getByRole('button', { name: 'Queue captions' }).click();

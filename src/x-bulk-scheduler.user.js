@@ -1418,9 +1418,9 @@
     },
   };
 
-  // Queue N caption-only items (kind:'caption', no url) then stamp times via
-  // the same buildSchedule() slotting. captions-only mode == this + Run.
-  function buildCaptionSchedule(n) {
+  // Queue caption-only items without rebuilding unrelated queue plans.
+  // The separate Build action schedules them when the owner is ready.
+  function queueCaptions(n) {
     const pool = captions.all().pool;
     if (!pool.length) { log('Caption pool empty — add captions first.', 'warn'); return; }
     const count = Math.max(1, Number(n) || 0);
@@ -1439,7 +1439,6 @@
       });
     }
     log(`Queued ${count} caption post(s). Tap Build to stamp times, then Run.`);
-    buildSchedule();
   }
 
   // ------------------------------------------------- SHARED POOL (export/import)
@@ -2132,8 +2131,8 @@
           captionMessage.textContent = 'The caption pool is empty. Add captions first.';
           return;
         }
-        buildCaptionSchedule(count);
-        captionMessage.textContent = `Queued ${count} caption items. Nothing was posted.`;
+        queueCaptions(count);
+        captionMessage.textContent = `Queued ${count} caption items. Tap Build to schedule them; nothing was posted.`;
       } catch (error) {
         captionMessage.textContent = 'Queueing could not be confirmed. Check the saved queue before retrying; some items may have been added.';
       }

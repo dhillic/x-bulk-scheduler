@@ -15,3 +15,5 @@ NODE_PATH=/tmp/xbs-browser-test/node_modules node --test tests/captions.browser.
 Alternatively set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to a compatible system
 Chromium. This synthetic test is not installed-userscript, real-X or manual
 screen-reader validation; those checks remain separate.
+
+Queueing captions does not rebuild or restamp the existing queue; use Build separately. The test checks a fictional existing schedule remains unchanged. Caption-pool and queue writes are still separate and may partially succeed; cross-tab and asynchronous failures remain unresolved.
