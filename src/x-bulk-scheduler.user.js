@@ -1927,7 +1927,7 @@
         <form id="xbs-timing-form" hidden novalidate style="margin:6px 0;padding:6px;border:1px solid #aaa">
           <strong>Timing settings</strong>
           <label style="display:block">Preset <select name="preset"><option value="12x4">12x4</option><option value="10x5">10x5</option></select></label>
-          <label style="display:block">Daily start time (WAT, HH:MM) <input name="startTime" type="text" inputmode="numeric" placeholder="09:00" style="width:70px" /></label>
+          <label style="display:block">Daily start time (browser local time, HH:MM) <input name="startTime" type="text" inputmode="numeric" placeholder="09:00" style="width:70px" /></label>
           <label style="display:block">Gap in minutes (0 = bursts) <input name="gapMinutes" type="number" min="0" max="1440" step="1" style="width:70px" /></label>
           <label style="display:block">Days ahead (1–366) <input name="daysAhead" type="number" min="1" max="366" step="1" style="width:70px" /></label>
           <label style="display:block">Daily cap (1–1000) <input name="dailyCap" type="number" min="1" max="1000" step="1" style="width:70px" /></label>

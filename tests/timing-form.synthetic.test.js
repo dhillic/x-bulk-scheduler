@@ -22,7 +22,7 @@ test('timing form validates, cancels, and preserves settings on save failure', a
     await page.addScriptTag({path:path.join(__dirname,'../src/x-bulk-scheduler.user.js')});
     const trigger = page.getByRole('button',{name:'Timing',exact:true});
     const form = page.locator('#xbs-timing-form');
-    const start = page.getByLabel('Daily start time (WAT, HH:MM)');
+    const start = page.getByLabel('Daily start time (browser local time, HH:MM)');
     const save = page.getByRole('button',{name:'Save timing'});
     await trigger.focus(); await trigger.press('Enter');
     assert.equal(await form.isVisible(),true);
