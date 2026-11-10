@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const path = require('node:path');
 
-test('WAT instant mapping and ambiguous picker controls fail safely', async t => {
+test('browser-local instant mapping and ambiguous picker controls fail safely', async t => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined });
   try {
     for (const timezoneId of ['Pacific/Honolulu', 'Asia/Tokyo']) {
@@ -40,7 +40,7 @@ test('WAT instant mapping and ambiguous picker controls fail safely', async t =>
       assert.equal(await page.evaluate(() => window.__confirmed), 0);
       await page.evaluate(() => window.module.exports.setSchedulePicker('2029-12-31T23:30:00.000Z', true));
       const got = await page.evaluate(() => ({ values: Array.from(document.querySelectorAll('[role=dialog] select')).map(s => s.selectedOptions[0].textContent), count: window.__confirmed }));
-      assert.deepEqual(got, { values: ['January','1','2030','12','30','AM'], count: 1 });
+      assert.deepEqual(got, { values: timezoneId === 'Pacific/Honolulu' ? ['December','31','2029','1','30','PM'] : ['January','1','2030','8','30','AM'], count: 1 });
       const duplicateId = await page.evaluate(async () => {
         const original = document.querySelector('#SELECTOR_4'); const duplicate = original.cloneNode(true); original.after(duplicate); window.__confirmed = 0;
         try { await window.module.exports.setSchedulePicker('2029-12-31T23:30:00.000Z', true); return 'unexpected success'; }

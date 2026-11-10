@@ -11,10 +11,10 @@ NODE_PATH=/tmp/xbs-browser-test/node_modules node --test tests/schedule-picker.b
 
 Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a compatible system Chromium.
 The test intercepts all requests and uses an entirely fictional picker. It
-checks a WAT year/day boundary under two host timezones, missing/duplicate
+checks browser-local year/day mapping in Honolulu and Tokyo, missing/duplicate
 controls, ambiguous confirmation and invalid dates. No real post is submitted.
 
-A correct synthetic mapping is not proof that X's current picker uses WAT or
+A correct synthetic mapping is not proof that X's current picker always uses browser local time or
 has these controls. The actual picker, its displayed timezone, selected instant,
 userscript manager and DOM rerenders remain unverified. The strict shape and
 single-dialog checks deliberately stop if the site differs; they may prevent
@@ -26,3 +26,5 @@ composer, because actual picker timezone verification is absent. Synthetic
 fixtures opt in explicitly to exercise the pure mapping and control checks;
 they do not enable the production caller. Removing that block requires review
 and independently verified evidence from the real supported X environment.
+
+The empty real X picker displayed different zone labels after a browser timezone override on the same connection, but no selected instant was verified. Ambiguous DST transitions and the baseline WAT-formatted display remain unresolved. Live scheduling stays blocked.

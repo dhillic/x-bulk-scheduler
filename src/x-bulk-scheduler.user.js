@@ -1027,7 +1027,7 @@
     return out;
   }
 
-  // Open the picker and set the WAT wall-clock representation of the instant.
+  // Open the picker and set the browser-local wall-clock representation of the instant.
   // Actual picker timezone/field mapping still needs real-X verification.
   async function setSchedulePicker(whenISO, pickerTimezoneVerified = PICKER_TIMEZONE_VERIFIED) {
     if (!SCHEDULER_MAPPED) throw new Error('Schedule picker not mapped.');
@@ -1052,12 +1052,12 @@
       throw new Error('picker controls are not in one unambiguous dialog');
 
     const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
-      timeZone: 'Africa/Lagos', year: 'numeric', month: 'numeric', day: 'numeric',
+      year: 'numeric', month: 'numeric', day: 'numeric',
       hour: 'numeric', minute: 'numeric', hourCycle: 'h23',
     }).formatToParts(d).map((p) => [p.type, p.value]));
-    const watHour = Number(parts.hour);
-    const hour12 = ((watHour + 11) % 12) + 1;
-    const ampm = watHour < 12 ? 'AM' : 'PM';
+    const localHour = Number(parts.hour);
+    const hour12 = ((localHour + 11) % 12) + 1;
+    const ampm = localHour < 12 ? 'AM' : 'PM';
     // Set year+month first so the day option list matches that month, then day.
     const steps = [
       [s.year, Number(parts.year)], [s.month, MONTHS[Number(parts.month) - 1]], [s.day, Number(parts.day)],
