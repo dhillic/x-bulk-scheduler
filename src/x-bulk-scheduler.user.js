@@ -911,7 +911,18 @@
   // Pure, local, no DOM, no network. Splits queued items into day/session/slot
   // and stamps each with a WAT timestamp. Idempotent: re-runnable any time.
   function buildSchedule() {
+    // Validate before reading or writing a plan. Date setters silently normalize
+    // values such as 24:00, which can move a post into an unintended day.
+    const validTime = typeof CONFIG.startTime === 'string' && /^(?:[01]?\d|2[0-3]):[0-5]\d(?![\s\S])/.test(CONFIG.startTime);
+    const validInteger = (v, min, max) => Number.isSafeInteger(v) && v >= min && v <= max;
     const p = CONFIG.presets[CONFIG.active];
+    if (!validTime || !validInteger(CONFIG.gapMinutes, 0, 1440) ||
+        !validInteger(CONFIG.daysAhead, 1, 366) || !validInteger(CONFIG.dailyCap, 1, 1000) ||
+        !p || !validInteger(p.postsPerSession, 1, 1000) || !validInteger(p.sessions, 1, 1000) ||
+        !validInteger(p.sessionHours, 0, 24) || !validInteger(p.gapSeconds, 0, 86400)) {
+      log('Invalid timing settings. Existing plan and settings were not changed.', 'warn');
+      return;
+    }
     const perDay = p.postsPerSession * p.sessions;
     const all = store.getQueue().filter((x) => x.state === 'queued');
     const queue = all.filter(isSchedulable);
