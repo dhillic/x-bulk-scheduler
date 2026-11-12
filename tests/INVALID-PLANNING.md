@@ -1,7 +1,17 @@
-# Invalid planning inputs
+# Draft: browser-local planning safety
 
-This partial fix rejects malformed 24-hour start times and non-integer or out-of-range timing values before touching the queue. Gap 0–1440 minutes, days 1–366 and daily cap 1–1000 are conservative implementation bounds, not verified X limits; previously stored values outside these ranges will need correction. Malformed input leaves the existing plan and settings unchanged in the synthetic test.
+This proposal validates timing inputs, then builds browser-local future slots at picker-minute precision. It enforces the lower of the preset and configured per-day caps, does not spill a day's slots into another local day, clears stale times from queued items including parked photos, and reserves the local day and minute of existing `scheduled` markers. A marker is not proof of delivery. Unparseable marker times leave the queue unchanged. Earlier queued records are rebuilt, and excess records wait without a time. A start time that has passed or equals the current instant moves to the next local day.
 
-This does not fix the baseline's host-local date arithmetic, past times, midnight spillover, per-day cap calculation, plan concurrency or actual X scheduling. No claim of full planning safety or issue closure is made.
+For each local wall minute, candidate timezone offsets are gathered at minute intervals across the nearby days and round-tripped. A missing or ambiguous minute, including tested DST gaps/folds, leaves the existing queue unchanged. This is conservative and may stop an entire build instead of skipping an ambiguous slot. Browser-local planning is a proposed policy, not verification of X's picker or saved instant. The existing picker is not fixed by this PR.
 
-Install Node, Playwright and Chromium, then run `node --test tests/invalid-planning.synthetic.test.js`. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` if necessary. The browser test intercepts requests and uses fictional in-memory data; it performs no real X actions.
+Bounds: gap 0–1440 minutes, days 1–366 and cap 1–1000; these are implementation choices, not verified X limits. Burst gaps round up to whole minutes because the picker cannot select seconds.
+
+## Offline checks
+
+- `for z in UTC Africa/Lagos America/New_York Asia/Tokyo America/Los_Angeles Australia/Lord_Howe; do TZ="$z" node tests/local-planner.node.js; done` — six timezone runs, each with 100 seeded invariant cases and targeted cases; New York and Lord Howe cases include gaps and folds. Uses fictional in-memory data, no network.
+- `node --test tests/invalid-planning.synthetic.test.js` — one intercepted browser test, invalid inputs preserve plan and settings.
+- Synthetic built-in self-test: 43/43 in UTC using an off-device Node harness. `node --check` and `git diff --check` passed.
+
+## Not complete
+
+This draft modifies the public-baseline implementation only, not the separately supplied preview build. It has not been tested in an installed userscript, X's real picker, or a live scheduling run; it does not establish actual saved times. Cross-tab/async storage races, ambiguous writes, account changes, stale plans after settings or timezone changes, and interaction with other draft PRs remain unresolved. The original source is not hardened against every malformed or unsupported timezone/history record. Older markers can be conservative false reservations. The full suite and device/accessibility checks have not been completed. Do not merge or deploy until integration and safety review.
